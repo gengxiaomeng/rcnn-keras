@@ -64,6 +64,9 @@ for epoch_num in range(epochs_num):
         if iter_num == epoch_length:
             if loss < best_loss:
                 best_loss = loss
-                model.save_weights('./weights/model_weights.h5')
+                save_path = os.path.join(log_path, 'model_weights.h5')
+                if os.path.exists(save_path):
+                    os.remove(save_path)
+                model.save_weights(save_path)
                 iter_num = 0
             break

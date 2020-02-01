@@ -7,7 +7,6 @@ from utils.bbox_overlaps import bbox_overlaps
 from utils.bbox_transform import bbox_transform
 
 im_size = cfg.IM_SIZE
-threshold = cfg.THRESHOLD
 
 
 class FlowerData(object):
@@ -48,11 +47,11 @@ class FlowerData(object):
         gt_boxes = [list(map(float, box.split(','))) for box in lines[1:]]
         return image_path, np.asarray(gt_boxes)
 
-    def data_generator_wrapper(self, batch_size=1):
+    def data_generator_wrapper(self, batch_size=1, is_svm=False):
         assert batch_size == 1, 'batch_size should be one'
-        return self._data_generator(batch_size)
+        return self._data_generator(batch_size, is_svm)
 
-    def _data_generator(self, batch_size):
+    def _data_generator(self, batch_size, is_svm):
         i = 0
         n = self.samples_num
         while True:
@@ -73,7 +72,7 @@ class FlowerData(object):
                 # BGR -> RGB 做简单处理
                 img = img[:, :, (2, 1, 0)]
                 img = img.astype(np.float32)
-                img = img / 255
+                img = img / 255.
                 # gt_box resize
                 gt_boxes[:, [0, 2]] = gt_boxes[:, [0, 2]] * (im_size[0] / width)
                 gt_boxes[:, [1, 3]] = gt_boxes[:, [1, 3]] * (im_size[1] / height)
@@ -98,7 +97,7 @@ class FlowerData(object):
                     selected_imgs.append(crop_img)
                     candidates.add((x1, y1, x2, y2))
 
-                rects = np.asarray([list(candidate) for candidate in candidates])
+                rects = [list(candidate) for candidate in candidates]
                 # 将 gt_boxes 添加进来
                 for idx in range(len(gt_boxes)):
                     x1, y1, x2, y2 = gt_boxes[idx, 0:4]
@@ -108,23 +107,36 @@ class FlowerData(object):
                     try:
                         crop_img = cv2.resize(crop_img, im_size, interpolation=cv2.INTER_CUBIC)
                         selected_imgs.append(crop_img)
+                        rects.append(gt_boxes[idx, 0:4])
                     except:
                         continue
 
-                rects = np.vstack((rects, gt_boxes[:, 0:4]))
+                rects = np.asarray(rects)
                 # cal iou
                 overlaps = bbox_overlaps(rects, gt_boxes)
                 # 选出与哪个gt_box iou最大的索引位置
                 argmax_overlaps = np.argmax(overlaps, axis=1)
                 # judge cls
                 max_overlaps = np.max(overlaps, axis=1)
-                keep = np.where(max_overlaps > threshold)[0]
+                threshold = cfg.THRESHOLD if is_svm else cfg.FINE_TUNE_THRESHOLD
+                keep = np.where(max_overlaps >= threshold)[0]
                 labels = np.empty(len(argmax_overlaps))
-                labels.fill(0)
-                labels[keep] = gt_boxes[argmax_overlaps[keep], 4]
+                if is_svm:
+                    # 用 -1 填充
+                    labels.fill(-1)
+                    # bg_ids = np.where(max_overlaps < )
+                    # ground - truth样本作为正样本  且IoU大于0.3的“hard negatives”，
+                    # 背景
+                    bg_ids = np.where(max_overlaps < threshold)[0]
+                    labels[bg_ids] = 0
+                    fg_ids = np.where(max_overlaps > 0.7)
+                    labels[fg_ids] = gt_boxes[argmax_overlaps[keep], 4]
+                else:
+                    labels.fill(0)
+                    # 对于大于指定threshold 前景类别
+                    labels[keep] = gt_boxes[argmax_overlaps[keep], 4]
                 # to something
                 deltas = bbox_transform(rects, gt_boxes[argmax_overlaps, 0:4])
-
                 total_deltas.append(deltas)
                 total_labels.append(labels)
                 total_img_data.append(selected_imgs)

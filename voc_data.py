@@ -115,7 +115,7 @@ class VocData(object):
                 labels = np.empty(len(argmax_overlaps))
                 labels.fill(0)
                 labels[keep] = gt_boxes[argmax_overlaps[keep], 4]
-                # to something
+                # do reg
                 deltas = bbox_transform(rects, gt_boxes[argmax_overlaps, 0:4])
 
                 total_deltas.append(deltas)
