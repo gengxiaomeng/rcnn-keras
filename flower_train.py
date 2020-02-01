@@ -59,7 +59,7 @@ for epoch_num in range(epochs_num):
 
         train_step += 1
         iter_num += 1
-        progbar.update(iter_num, [('losses', loss)])
+        progbar.update(iter_num, [('loss', loss)])
 
         if iter_num == epoch_length:
             if loss < best_loss:
@@ -68,5 +68,5 @@ for epoch_num in range(epochs_num):
                 if os.path.exists(save_path):
                     os.remove(save_path)
                 model.save_weights(save_path)
-                iter_num = 0
+            iter_num = 0
             break
