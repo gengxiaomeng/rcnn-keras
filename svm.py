@@ -9,6 +9,12 @@ from sklearn.svm import SVC
 import numpy as np
 import joblib
 
+
+svm_path = './svm'
+if not os.path.exists(svm_path):
+    os.mkdir(svm_path)
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--weights', default='./logs/model_weights.h5', help='weights path')
 
