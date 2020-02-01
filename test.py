@@ -1,10 +1,7 @@
-from PIL import Image
 import numpy as np
-import config as cfg
 from ss.selectivesearch import selective_search
 import joblib
 import os
-from keras.models import Model
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import skimage
@@ -17,6 +14,7 @@ from utils.bbox_transform import bbox_transform_inv
 from utils.nms import py_cpu_nms
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--img_path', default='', help='test img path')
 parser.add_argument('--weights', default='./logs/model_weights.h5', help='weights path')
 
 im_size = cfg.IM_SIZE
@@ -64,8 +62,8 @@ def get_proposal(img):
     return np.asarray(selected_imgs), np.asarray(rects)
 
 
-def main():
-    image_path = './data/2flowers/jpg/0/image_0561.jpg'
+def main(args):
+    image_path = args.img_path
     img = cv2.imread(image_path)
     # height/width/channel
     height, width, _ = img.shape
