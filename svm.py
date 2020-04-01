@@ -95,8 +95,6 @@ def main(args):
     total_Y = []
     for i in range(epoch_length):
         X, Y, rects = next(g_train)
-        if np.isnan(rects).any():
-            print(i)
         features = features_model.predict(X)
         total_features.append(features)
         total_rects.append(rects)
