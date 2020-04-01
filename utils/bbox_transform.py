@@ -29,8 +29,8 @@ def bbox_transform(ex_rois, gt_rois):
 
     dx = (gt_ctr_x - ex_ctr_x) / ex_widths
     dy = (gt_ctr_y - ex_ctr_y) / ex_heights
-    dw = np.log(gt_widths / ex_widths + 1e-5)
-    dh = np.log(gt_heights / ex_heights + 1e-5)
+    dw = np.log(gt_widths / ex_widths)
+    dh = np.log(gt_heights / ex_heights)
     targets = np.vstack((dx, dy, dw, dh)).transpose()
     return targets
 

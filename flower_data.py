@@ -128,14 +128,17 @@ class FlowerData(object):
                 threshold = cfg.THRESHOLD if is_svm else cfg.FINE_TUNE_THRESHOLD
                 keep = np.where(max_overlaps >= threshold)[0]
                 labels = np.empty(len(argmax_overlaps))
+                # svm和fine-tune的iou取值是不一样的
                 if is_svm:
+                    # 因为svm非常适合小训练集 所以论文中严格限制iou范围 减少svm训练样本集
                     # 用 -1 填充
                     labels.fill(-1)
                     # bg_ids = np.where(max_overlaps < )
                     # ground - truth样本作为正样本  且IoU大于0.3的“hard negatives”，
                     # 背景
-                    bg_ids = np.where(max_overlaps < threshold)[0]
+                    bg_ids = np.where(max_overlaps > threshold)[0]
                     labels[bg_ids] = 0
+                    # gt 为正样本  这里用>0.7来当做正样本
                     fg_ids = np.where(max_overlaps > 0.7)
                     labels[fg_ids] = gt_boxes[argmax_overlaps[fg_ids], 4]
                 else:
