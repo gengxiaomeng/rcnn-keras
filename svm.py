@@ -23,7 +23,7 @@ classes_num = 2
 im_size = cfg.IM_SIZE
 
 # 得到训练数据生成器
-flower_data = FlowerData('./data/fine_tune_list.txt')
+flower_data = FlowerData('./data/fine_tune_list.txt', random_shuffle=False)
 g_train = flower_data.data_generator_wrapper(is_svm=True)
 
 epoch_length = flower_data.samples_num
@@ -94,19 +94,16 @@ def main(args):
     total_rects = []
     total_Y = []
     for i in range(epoch_length):
-        print(i)
         X, Y, rects = next(g_train)
-        # if rects.con
+        if np.isnan(rects).any():
+            print(i)
         features = features_model.predict(X)
         total_features.append(features)
         total_rects.append(rects)
         total_Y.append(Y)
-    print(total_rects, total_rects)
     total_features = np.concatenate(total_features, axis=0)
     total_rects = np.concatenate(total_rects, axis=0)
     total_Y = np.concatenate(total_Y, axis=0)
-
-
     # train svm
     train_svm(total_features, total_Y)
     # train bbox

@@ -30,7 +30,14 @@ class FlowerData(object):
     def _get_annotations(self, annotation_path):
         annotations = open(annotation_path).readlines()
         annotations = [annotation.strip() for annotation in annotations]
-        return np.array(annotations)
+        new_annotation = annotations.copy()
+        for annotation in annotations:
+            lines = annotation.strip().split()
+            for bbox in lines[1:]:
+                box = list(map(float, bbox.split(',')))
+                if box[0] >= box[2] or box[1] >= box[3]:
+                    new_annotation.remove(annotation)
+        return np.array(new_annotation)
 
     def _parse_flower_data_path(self, flower_data_path):
         annotations = open(flower_data_path).readlines()
@@ -145,3 +152,5 @@ class FlowerData(object):
             total_labels = np.concatenate(total_labels, axis=0)
             total_deltas = np.concatenate(total_deltas, axis=0)
             yield total_img_data, total_labels, total_deltas
+
+flower_data = FlowerData('./data/fine_tune_list.txt', random_shuffle=False)
