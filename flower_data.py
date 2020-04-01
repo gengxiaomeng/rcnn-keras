@@ -130,7 +130,7 @@ class FlowerData(object):
                     bg_ids = np.where(max_overlaps < threshold)[0]
                     labels[bg_ids] = 0
                     fg_ids = np.where(max_overlaps > 0.7)
-                    labels[fg_ids] = gt_boxes[argmax_overlaps[keep], 4]
+                    labels[fg_ids] = gt_boxes[argmax_overlaps[fg_ids], 4]
                 else:
                     labels.fill(0)
                     # 对于大于指定threshold 前景类别

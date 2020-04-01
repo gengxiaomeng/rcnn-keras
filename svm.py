@@ -9,11 +9,11 @@ from sklearn.svm import SVC
 import numpy as np
 import joblib
 
+np.set_printoptions(threshold=np.inf)
 
 svm_path = './svm'
 if not os.path.exists(svm_path):
     os.mkdir(svm_path)
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--weights', default='./logs/model_weights.h5', help='weights path')
@@ -94,15 +94,19 @@ def main(args):
     total_rects = []
     total_Y = []
     for i in range(epoch_length):
+        print(i)
         X, Y, rects = next(g_train)
+        # if rects.con
         features = features_model.predict(X)
         total_features.append(features)
         total_rects.append(rects)
         total_Y.append(Y)
+    print(total_rects, total_rects)
+    total_features = np.concatenate(total_features, axis=0)
+    total_rects = np.concatenate(total_rects, axis=0)
+    total_Y = np.concatenate(total_Y, axis=0)
 
-    total_features = np.asarray(total_features)
-    total_rects = np.asarray(total_rects)
-    total_Y = np.asarray(total_Y)
+
     # train svm
     train_svm(total_features, total_Y)
     # train bbox
